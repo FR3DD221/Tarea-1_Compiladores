@@ -1,0 +1,83 @@
+Terminals 
+
+plus -> '+'
+minus -> '-'
+product -> '*'
+division -> '/'
+power -> '^'
+modulus -> '%'
+equal -> '='
+areEquals -> '=='
+gratherThan -> '>'
+lessThan -> '<'
+gratherEQThan -> '>='
+lessEQThan -> '<='
+diff -> '!='
+main -> 'main'
+boolT -> 'boolean'
+intT -> 'int'
+floatT -> 'float'
+stringT -> 'string'
+charT -> 'char'
+digit -> [0-9]
+digitNoZero -> [1-9]
+letter -> [A-Za-z_]
+decimal -> \.
+delimeterFunc -> '_'
+endExpr -> ';'
+return -> 'return'
+true -> 'True'
+false -> 'False'
+commentDelimeter -> '###'
+squareParentS -> '['
+squareParentE -> ']'
+parentS -> '('
+parentE -> ')'
+coma -> ','
+sep -> ':'
+loc -> 'local'
+global -> 'global'
+
+No terminals
+
+intNum -> minus? digit|digitNoZero digit+
+scopeVar -> (loc|global)
+floatNum -> minus? intNum decimal digit+
+stringC -> letter(letter|digit)*
+boolNum -> (true|false)
+types -> charT | stringT | intT | floatT | boolT
+typesLim -> charT | intT
+typesLimFunc -> charT | intT | floatT | boolT
+mathOp -> plus | minus | product | division | modulus | power
+boolsMathOp -> lessThan | gratherThan | areEquals | gratherEQThan | lessEQThan | diff
+operation -> parentS? sep (boolNum|intNum|floatNum|stringC|letter) sep mathOp sep (boolNum|intNum|floatNum|stringC|letter) sep parentE? 
+extraOperation -> parentS? sep mathOp sep (boolNum|intNum|floatNum|stringC|letter) sep parentE?
+boolOp -> parentS? sep (intNum|floatNum) sep boolsMathOp sep (intNum|floatNum) sep parentE? 
+extraBoolOp -> parentS? sep boolsMathOp sep (intNum|floatNum) sep parentE? 
+
+#All about arrays
+assignationArray -> equal sep squareParentS sep (intNum|letter (coma intNum|letter)*)? sep squareParentE 
+arrayIns -> scopeVar sep typesLim sep stringC sep squareParentS sep intNum sep squareParentE sep endExpr
+arrayInsAssig -> scopeVar sep typesLim sep stringC sep squareParentS sep intNum sep squareParentE sep assignationArray sep endExpr
+arrayAssig -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE sep equal sep (intNum|letter) sep endExpr
+arrayElement -> (arrayIns|arrayInsAssig) sep intNum sep endExpr
+
+#All about vars
+assignation -> equal sep (boolNum|intNum|floatNum|stringC|operation|letter|arrayElement|boolOp) 
+varAssig -> scopeVar sep (varIns|varInsAssig) sep assignation sep endExpr
+varInsAssig -> scopeVar sep types sep stringC sep assignation sep endExpr
+varIns -> scopeVar types sep stringC sep endExpr
+extraVarAssig -> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig) sep (mathOp (varAssig|varInsAssig)|extraOperation) sep endExpr
+boolExtraVarAssig -> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig) sep (boolsMathOp (varAssig|varInsAssig)|extraBoolOp) sep endExpr
+equalizingVars-> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig|varIns) sep endExpr
+
+
+#All about functions
+mainFun -> typesLimFunc sep main sep delimeterFunc sep (varAssig|varIns|varInsAssig|extraVarAssig|equalizingVars|arrayAssig|arrayInsAssig|arrayIns)* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
+function -> typesLimFunc sep stringC sep delimeterFunc sep (varAssig|varIns|varInsAssig|extraVarAssig|equalizingVars|arrayAssig|arrayInsAssig|arrayIns)* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
+
+
+Initial symbol
+
+
+Productions
