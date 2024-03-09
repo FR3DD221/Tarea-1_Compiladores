@@ -37,6 +37,16 @@ coma -> ','
 sep -> ':'
 loc -> 'local'
 global -> 'global'
+if -> 'if'
+else -> 'else'
+switch -> 'switch'
+case -> 'case:'
+default -> 'default:'
+brake -> 'brake'
+for -> 'for'
+in -> 'in'
+range -> 'range'
+while -> 'while'
 
 No terminals
 
@@ -60,21 +70,34 @@ assignationArray -> equal sep squareParentS sep (intNum|letter (coma intNum|lett
 arrayIns -> scopeVar sep typesLim sep stringC sep squareParentS sep intNum sep squareParentE sep endExpr
 arrayInsAssig -> scopeVar sep typesLim sep stringC sep squareParentS sep intNum sep squareParentE sep assignationArray sep endExpr
 arrayAssig -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE sep equal sep (intNum|letter) sep endExpr
-arrayElement -> (arrayIns|arrayInsAssig) sep intNum sep endExpr
+arrayElement -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE sep endExpr
 
 #All about vars
 assignation -> equal sep (boolNum|intNum|floatNum|stringC|operation|letter|arrayElement|boolOp) 
 varAssig -> scopeVar sep (varIns|varInsAssig) sep assignation sep endExpr
 varInsAssig -> scopeVar sep types sep stringC sep assignation sep endExpr
 varIns -> scopeVar types sep stringC sep endExpr
+
+#I think not necessary
 extraVarAssig -> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig) sep (mathOp (varAssig|varInsAssig)|extraOperation) sep endExpr
 boolExtraVarAssig -> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig) sep (boolsMathOp (varAssig|varInsAssig)|extraBoolOp) sep endExpr
 equalizingVars-> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig|varIns) sep endExpr
 
+#All the posibilities that a code block can do
+allABlockCouldCon -> (varAssig|varIns|varInsAssig|arrayAssig|arrayInsAssig|arrayIns|ifStruc|ifElseStruc|switchStruc|whileLoop|forLopp)
 
 #All about functions
-mainFun -> typesLimFunc sep main sep delimeterFunc sep (varAssig|varIns|varInsAssig|extraVarAssig|equalizingVars|arrayAssig|arrayInsAssig|arrayIns)* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
-function -> typesLimFunc sep stringC sep delimeterFunc sep (varAssig|varIns|varInsAssig|extraVarAssig|equalizingVars|arrayAssig|arrayInsAssig|arrayIns)* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
+mainFun -> typesLimFunc sep main sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
+function -> typesLimFunc sep stringC sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
+
+#conditional structures
+ifStruc -> if sep boolOp sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
+ifElseStruc -> ifStruc sep else delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
+switchStruc -> switch sep parentS sep (intNum|stringC) sep parentE sep delimeterFunc sep (case(intNum|letter) sep allABlockCouldCon* sep brake endExpr sep)+ sep default sep allABlockCouldCon* sep brake sep endExpr delimeterFunc
+
+#loops
+whileLoop -> while sep boolOp sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
+forLopp -> for sep stringC sep in sep range sep parentS sep (0|intNum) sep coma sep intNum sep (1|intNum) sep parentE sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
 
 
 Initial symbol
