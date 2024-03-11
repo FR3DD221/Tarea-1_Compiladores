@@ -22,6 +22,7 @@ charT -> 'char'
 digit -> [0-9]
 digitNoZero -> [1-9]
 letter -> [A-Za-z_]
+letterV2 -> [A-Za-z]
 decimal -> \.
 delimeterFunc -> '_'
 endExpr -> ';'
@@ -54,29 +55,31 @@ intNum -> minus? digit|digitNoZero digit+
 scopeVar -> (loc|global)
 floatNum -> minus? intNum decimal digit+
 stringC -> letter(letter|digit)*
+id -> letterV2(letter|digit)*
 boolNum -> (true|false)
 types -> charT | stringT | intT | floatT | boolT
 typesLim -> charT | intT
 typesLimFunc -> charT | intT | floatT | boolT
+typesNum -> boolNum|intNum|floatNum|stringC|letter
 mathOp -> plus | minus | product | division | modulus | power
 boolsMathOp -> lessThan | gratherThan | areEquals | gratherEQThan | lessEQThan | diff
-operation -> parentS? sep (boolNum|intNum|floatNum|stringC|letter) sep mathOp sep (boolNum|intNum|floatNum|stringC|letter) sep parentE? 
-extraOperation -> parentS? sep mathOp sep (boolNum|intNum|floatNum|stringC|letter) sep parentE?
-boolOp -> parentS? sep (intNum|floatNum) sep boolsMathOp sep (intNum|floatNum) sep parentE? 
-extraBoolOp -> parentS? sep boolsMathOp sep (intNum|floatNum) sep parentE? 
+operation -> sep (typesNum) sep mathOp sep (typesNum) sep 
+extraOperation -> sep mathOp sep (typesNum) sep
+boolOp -> sep (intNum|floatNum) sep boolsMathOp sep (intNum|floatNum) sep 
+extraBoolOp -> sep boolsMathOp sep (intNum|floatNum) sep
 
 #All about arrays
 assignationArray -> equal sep squareParentS sep (intNum|letter (coma intNum|letter)*)? sep squareParentE 
-arrayIns -> scopeVar sep typesLim sep stringC sep squareParentS sep intNum sep squareParentE sep endExpr
-arrayInsAssig -> scopeVar sep typesLim sep stringC sep squareParentS sep intNum sep squareParentE sep assignationArray sep endExpr
-arrayAssig -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE sep equal sep (intNum|letter) sep endExpr
-arrayElement -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE sep endExpr
+arrayIns -> scopeVar sep typesLim sep id sep squareParentS sep intNum sep squareParentE  
+arrayInsAssig -> scopeVar sep typesLim sep id sep squareParentS sep intNum sep squareParentE sep assignationArray  
+arrayAssig -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE sep equal sep (intNum|letter)  
+arrayElement -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE  
 
 #All about vars
 assignation -> equal sep (boolNum|intNum|floatNum|stringC|operation|letter|arrayElement|boolOp) 
-varAssig -> scopeVar sep (varIns|varInsAssig) sep assignation sep endExpr
-varInsAssig -> scopeVar sep types sep stringC sep assignation sep endExpr
-varIns -> scopeVar types sep stringC sep endExpr
+varAssig -> scopeVar sep (varIns|varInsAssig) sep assignation 
+varInsAssig -> scopeVar sep types sep id sep assignation 
+varIns -> scopeVar types sep id  
 
 #I think not necessary
 extraVarAssig -> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig) sep (mathOp (varAssig|varInsAssig)|extraOperation) sep endExpr
@@ -84,11 +87,11 @@ boolExtraVarAssig -> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig)
 equalizingVars-> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig|varIns) sep endExpr
 
 #All the posibilities that a code block can do
-allABlockCouldCon -> (varAssig|varIns|varInsAssig|arrayAssig|arrayInsAssig|arrayIns|ifStruc|ifElseStruc|switchStruc|whileLoop|forLopp)
+allABlockCouldCon -> (varAssig|varIns|varInsAssig|arrayAssig|arrayInsAssig|arrayIns|ifStruc|ifElseStruc|switchStruc|whileLoop|forLopp) endExpr
 
 #All about functions
 mainFun -> typesLimFunc sep main sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
-function -> typesLimFunc sep stringC sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
+function -> typesLimFunc sep id sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
 
 #conditional structures
 ifStruc -> if sep boolOp sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
@@ -96,8 +99,8 @@ ifElseStruc -> ifStruc sep else delimeterFunc sep allABlockCouldCon* sep return 
 switchStruc -> switch sep parentS sep (intNum|stringC) sep parentE sep delimeterFunc sep (case(intNum|letter) sep allABlockCouldCon* sep brake endExpr sep)+ sep default sep allABlockCouldCon* sep brake sep endExpr delimeterFunc
 
 #loops
-whileLoop -> while sep boolOp sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
-forLopp -> for sep stringC sep in sep range sep parentS sep (0|intNum) sep coma sep intNum sep (1|intNum) sep parentE sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
+whileLoop -> while sep boolOp sep delimeterFunc sep allABlockCouldCon* sep return? sep (stringC|operation)? sep delimeterFunc
+forLopp -> for sep stringC sep in sep range sep parentS sep (0|intNum) sep coma sep intNum sep (1|intNum) sep parentE sep delimeterFunc sep allABlockCouldCon* sep return? sep (stringC|operation)? sep delimeterFunc
 
 
 Initial symbol
