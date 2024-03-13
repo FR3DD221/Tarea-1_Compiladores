@@ -48,6 +48,13 @@ for -> 'for'
 in -> 'in'
 range -> 'range'
 while -> 'while'
+types -> charT | stringT | intT | floatT | boolT
+typesLim -> charT | intT
+typesLimFunc -> charT | intT | floatT | boolT
+mathOp -> plus | minus | product | division | modulus | power
+boolsMathOp -> lessThan | gratherThan | areEquals | gratherEQThan | lessEQThan | diff
+and -> '&'
+or -> '|'
 
 No terminals
 
@@ -57,53 +64,56 @@ floatNum -> minus? intNum decimal digit+
 stringC -> letter(letter|digit)*
 id -> letterV2(letter|digit)*
 boolNum -> (true|false)
-types -> charT | stringT | intT | floatT | boolT
-typesLim -> charT | intT
-typesLimFunc -> charT | intT | floatT | boolT
 typesNum -> boolNum|intNum|floatNum|stringC|letter
-mathOp -> plus | minus | product | division | modulus | power
-boolsMathOp -> lessThan | gratherThan | areEquals | gratherEQThan | lessEQThan | diff
-operation -> sep (typesNum) sep mathOp sep (typesNum) sep 
-extraOperation -> sep mathOp sep (typesNum) sep
-boolOp -> sep (intNum|floatNum) sep boolsMathOp sep (intNum|floatNum) sep 
-extraBoolOp -> sep boolsMathOp sep (intNum|floatNum) sep
+operation -> (typesNum) mathOp (typesNum) 
+extraOperation -> mathOp (typesNum)
+boolOp -> (intNum|floatNum) boolsMathOp (intNum|floatNum) 
+extraBoolOp -> boolsMathOp (intNum|floatNum)
+parameters -> parentS parameterList? parentE
+parameterList -> parameter (',' parameter)*
+parameter -> typesLim id
+
 
 #All about arrays
-assignationArray -> equal sep squareParentS sep (intNum|letter (coma intNum|letter)*)? sep squareParentE 
-arrayIns -> scopeVar sep typesLim sep id sep squareParentS sep intNum sep squareParentE  
-arrayInsAssig -> scopeVar sep typesLim sep id sep squareParentS sep intNum sep squareParentE sep assignationArray  
-arrayAssig -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE sep equal sep (intNum|letter)  
-arrayElement -> (arrayIns|arrayInsAssig) sep squareParentS sep intNum sep squareParentE  
+assignationArray -> equal squareParentS (intNum|letter (coma intNum|letter)*)? squareParentE 
+arrayIns -> scopeVar sep typesLim sep id sep squareParentS intNum squareParentE  
+arrayInsAssig -> scopeVar sep typesLim sep id sep squareParentS sep intNum sep squareParentE assignationArray  
+arrayAssig -> (arrayIns|arrayInsAssig) squareParentS intNum squareParentE equal (intNum|letter)  
+arrayElement -> (arrayIns|arrayInsAssig) squareParentS intNum squareParentE  
 
 #All about vars
-assignation -> equal sep (boolNum|intNum|floatNum|stringC|operation|letter|arrayElement|boolOp) 
-varAssig -> scopeVar sep (varIns|varInsAssig) sep assignation 
-varInsAssig -> scopeVar sep types sep id sep assignation 
-varIns -> scopeVar types sep id  
+assignation -> equal (boolNum|intNum|floatNum|stringC|operation|letter|arrayElement|boolOp) 
+varAssig -> scopeVar (varIns|varInsAssig) assignation 
+varInsAssig -> scopeVar sep types id assignation 
+varIns -> scopeVar sep types sep id  
 
 #I think not necessary
-extraVarAssig -> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig) sep (mathOp (varAssig|varInsAssig)|extraOperation) sep endExpr
-boolExtraVarAssig -> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig) sep (boolsMathOp (varAssig|varInsAssig)|extraBoolOp) sep endExpr
-equalizingVars-> (varAssig|varInsAssig) sep equal sep (varAssig|varInsAssig|varIns) sep endExpr
+extraVarAssig -> (varAssig|varInsAssig) equal (varAssig|varInsAssig) sep (mathOp (varAssig|varInsAssig)|extraOperation) sep endExpr
+boolExtraVarAssig -> (varAssig|varInsAssig) equal (varAssig|varInsAssig) sep (boolsMathOp (varAssig|varInsAssig)|extraBoolOp) sep endExpr
+equalizingVars-> (varAssig|varInsAssig) equal (varAssig|varInsAssig|varIns) endExpr
 
 #All the posibilities that a code block can do
 allABlockCouldCon -> (varAssig|varIns|varInsAssig|arrayAssig|arrayInsAssig|arrayIns|ifStruc|ifElseStruc|switchStruc|whileLoop|forLopp) endExpr
 
 #All about functions
 mainFun -> typesLimFunc sep main sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
-function -> typesLimFunc sep id sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
+function -> typesLimFunc sep id sep parameters sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
 
 #conditional structures
-ifStruc -> if sep boolOp sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
-ifElseStruc -> ifStruc sep else delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep delimeterFunc
-switchStruc -> switch sep parentS sep (intNum|stringC) sep parentE sep delimeterFunc sep (case(intNum|letter) sep allABlockCouldCon* sep brake endExpr sep)+ sep default sep allABlockCouldCon* sep brake sep endExpr delimeterFunc
+ifStruc -> if sep parentS boolOp ((or | and) boolOp)* parentE delimeterFunc allABlockCouldCon* return (stringC|operation)? delimeterFunc
+ifElseStruc -> ifStruc else delimeterFunc allABlockCouldCon* return (stringC|operation)? delimeterFunc
+switchStruc -> switch parentS (intNum|stringC) parentE delimeterFunc (case(intNum|letter) allABlockCouldCon* brake endExpr)+ sep default allABlockCouldCon* brake endExpr delimeterFunc
 
 #loops
-whileLoop -> while sep boolOp sep delimeterFunc sep allABlockCouldCon* sep return? sep (stringC|operation)? sep delimeterFunc
-forLopp -> for sep stringC sep in sep range sep parentS sep (0|intNum) sep coma sep intNum sep (1|intNum) sep parentE sep delimeterFunc sep allABlockCouldCon* sep return? sep (stringC|operation)? sep delimeterFunc
+whileLoop -> while parentS boolOp ((or | and) boolOp)* parentE delimeterFunc allABlockCouldCon* return? (stringC|operation)? delimeterFunc
+forLopp -> for stringC sep in sep range parentS (0|intNum) coma intNum (1|intNum) parentE delimeterFunc allABlockCouldCon* return? (stringC|operation)? delimeterFunc
 
 
 Initial symbol
 
 
 Productions
+mathExpr = varIns + varIns
+mathExpr = intNum + varIns
+mathExpr = operation
+mathExpr = varIns extraOperation
