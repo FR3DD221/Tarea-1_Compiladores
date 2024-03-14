@@ -97,6 +97,9 @@ parameter -> typesLim id
 parameters -> parentS parameterList? parentE
 parameterList -> parameter (',' parameter)*
 
+#Starting symbol
+
+
 #Productions
 
 #All about vars
