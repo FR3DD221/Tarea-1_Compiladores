@@ -89,19 +89,27 @@ boolNum -> (true|false)
 typesNum -> boolNum|intNum|floatNum|stringC|letter
 operation -> ((typesNum) mathOp (typesNum) )| (typesNum (unaryMinus | unaryPlus))
 extraOperation -> mathOp (typesNum)
+extraOperationV2 -> (typesNum) mathOp
 
 boolOp -> (intNum|floatNum) boolsMathOp (intNum|floatNum) 
 extraBoolOp -> boolsMathOp (intNum|floatNum)
+extraBoolOpV2 -> (intNum|floatNum) boolsMathOp
 
 parameter -> typesLim id
 parameters -> parentS parameterList? parentE
 parameterList -> parameter (',' parameter)*
+
+#Starting symbol
+expression -> (expression)
+
+#Productions
 
 #All about vars
 assignation -> equal (boolNum|intNum|floatNum|stringC|operation|letter|arrayElement|boolOp) 
 varAssig -> scopeVar (varIns|varInsAssig) assignation 
 varInsAssig -> scopeVar sep types id assignation 
 varIns -> scopeVar sep types sep id  
+allTypesVars -> varIns | varInsAssig | varInsAssig | assignation
 
 #All about arrays
 assignationArray -> equal squareParentS (intNum|letter (coma intNum|letter)*)? squareParentE 
@@ -109,6 +117,7 @@ arrayIns -> scopeVar sep typesLim sep id sep squareParentS intNum squareParentE
 arrayInsAssig -> scopeVar sep typesLim sep id sep squareParentS sep intNum sep squareParentE assignationArray  
 arrayAssig -> (arrayIns|arrayInsAssig) squareParentS intNum squareParentE equal (intNum|letter)  
 arrayElement -> (arrayIns|arrayInsAssig) squareParentS intNum squareParentE  
+allTypersArr -> arrayAssig | arrayIns | arrayInsAssig | assignationArray
 
 #I think not necessary
 extraVarAssig -> (varAssig|varInsAssig) equal (varAssig|varInsAssig) sep (mathOp (varAssig|varInsAssig)|extraOperation) sep endExpr
@@ -134,3 +143,41 @@ forLopp -> for id sep in sep range parentS (0|intNum) coma intNum (1|intNum) par
 #StandardIO
 printLn -> print parentS (stringC | operation | boolNum | intNum | floatNum | id) parentE endExpr
 readInput -> read parentS (stringC | intNum | floatNum) parentE endExpr
+
+#Experiment
+id -> allTypersArr | allTypesVars | function | main
+
+#All the connections
+expression -> main
+expression -> function
+expression -> id 
+expression -> and
+expression -> or
+expression -> typesNum
+expression -> expression extraOperation
+expression -> extraOperationV2 expression 
+expression -> expression extraBoolOp
+expression -> extraBoolOpV2 expression 
+expression -> id mathOp id
+expression -> id boolsMathOp id
+expression -> id mathOp expression
+expression -> id boolsMathOp expression
+expression -> operation
+expression -> boolOp
+expression -> extraOperation
+expression -> extraOperationV2
+expression -> extraBoolOp
+expression -> extraBoolOpV2
+expression -> ifStruc | ifElseStruc | switchStruc 
+expression -> whileLoop | forLopp
+expression -> expression mathOp
+expression -> expression boolNum
+expression -> expression boolsMathOp
+expression -> expression mathOp expression
+expression -> expression boolNum expression
+expression -> expression boolsMathOp expression
+expression -> expression expression mathOp expression
+expression -> expression expression boolNum expression
+expression -> expression expression boolsMathOp expression
+expression -> expression expression
+expression -> (expression) 
