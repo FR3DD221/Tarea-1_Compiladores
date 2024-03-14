@@ -97,6 +97,8 @@ parameter -> typesLim id
 parameters -> parentS parameterList? parentE
 parameterList -> parameter (',' parameter)*
 
+#Productions
+
 #All about vars
 assignation -> equal (boolNum|intNum|floatNum|stringC|operation|letter|arrayElement|boolOp) 
 varAssig -> scopeVar (varIns|varInsAssig) assignation 
