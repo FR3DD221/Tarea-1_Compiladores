@@ -94,13 +94,14 @@ extraOperationV2 -> (typesNum) mathOp
 boolOp -> (intNum|floatNum) boolsMathOp (intNum|floatNum) 
 extraBoolOp -> boolsMathOp (intNum|floatNum)
 extraBoolOpV2 -> (intNum|floatNum) boolsMathOp
+boolOpIds -> id extraBoolOp | extraBoolOpV2 id | id boolsMathOp id
 
 parameter -> typesLim id
 parameters -> parentS parameterList? parentE
 parameterList -> parameter (',' parameter)*
 
 #Starting symbol
-expression -> (expression)
+si -> expression
 
 #Productions
 
@@ -132,12 +133,12 @@ mainFun -> typesLimFunc sep main sep delimeterFunc sep allABlockCouldCon* sep re
 function -> typesLimFunc sep id sep parameters sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
 
 #conditional structures
-ifStruc -> if sep parentS boolOp ((or | and) boolOp)* parentE delimeterFunc allABlockCouldCon* return (stringC|operation)? delimeterFunc
-ifElseStruc -> ifStruc else delimeterFunc allABlockCouldCon* return (stringC|operation)? delimeterFunc
+ifStruc -> if sep parentS (boolOpIds | boolOp ((or | and) boolOp)*) parentE delimeterFunc allABlockCouldCon* (return (stringC|operation)?)? delimeterFunc
+ifElseStruc -> ifStruc else delimeterFunc allABlockCouldCon* (return (stringC|operation)?)? delimeterFunc
 switchStruc -> switch parentS (intNum|stringC) parentE delimeterFunc (case(intNum|letter) allABlockCouldCon* brake endExpr)+ sep default allABlockCouldCon* brake endExpr delimeterFunc
 
 #loops
-whileLoop -> while parentS boolOp ((or | and) boolOp)* parentE delimeterFunc allABlockCouldCon* return? (stringC|operation)? delimeterFunc
+whileLoop -> while parentS (boolOpIds | boolOp ((or | and) boolOp)*) parentE delimeterFunc allABlockCouldCon* return? (stringC|operation)? delimeterFunc
 forLopp -> for id sep in sep range parentS (0|intNum) coma intNum (1|intNum) parentE delimeterFunc allABlockCouldCon* return? (stringC|operation)? delimeterFunc
 
 #StandardIO
@@ -154,6 +155,8 @@ expression -> id
 expression -> and
 expression -> or
 expression -> typesNum
+expression -> printLn
+expression -> readInput
 expression -> expression extraOperation
 expression -> extraOperationV2 expression 
 expression -> expression extraBoolOp
@@ -180,4 +183,5 @@ expression -> expression expression mathOp expression
 expression -> expression expression boolNum expression
 expression -> expression expression boolsMathOp expression
 expression -> expression expression
+expression -> -expression
 expression -> (expression) 
