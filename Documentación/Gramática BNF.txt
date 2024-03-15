@@ -157,6 +157,7 @@ expression -> or
 expression -> typesNum
 expression -> printLn
 expression -> readInput
+expression -> comment
 expression -> expression extraOperation
 expression -> extraOperationV2 expression 
 expression -> expression extraBoolOp
