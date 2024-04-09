@@ -27,8 +27,8 @@ digit -> [0-9]
 digitNoZero -> [1-9]
 decimal -> \.[digit]+
 
-letter -> [A-Za-z_]
-letterV2 -> [A-Za-z]
+letter -> ' [A-Za-z_!@#$%^&*():;<>¿?-=+] '
+letterV2 -> ' [A-Za-z] '
 
 true -> 'True'
 false -> 'False'
@@ -54,8 +54,8 @@ global -> 'global'
 if -> 'if'
 else -> 'else'
 switch -> 'switch'
-case -> 'case:'
-default -> 'default:'
+case -> 'case'
+default -> 'default'
 brake -> 'brake'
 for -> 'for'
 in -> 'in'
@@ -67,11 +67,12 @@ or -> '|'
 
 print -> 'print'
 read -> 'read'
+param -> 'param'
 
 No terminals
 
-id -> letterV2(letter|digit)*
-stringC -> letter(letter|digit)*
+id -> letterV2(letterV2|digit)*
+stringC -> " letter(letter|digit)* "
 
 comment -> (lineComment stringC)lineJump| blockStartComment stringC blockEndCooment
 
@@ -87,18 +88,17 @@ floatNum -> minus? intNum decimal digit+
 
 boolNum -> (true|false)
 typesNum -> boolNum|intNum|floatNum|stringC|letter
-operation -> ((typesNum) mathOp (typesNum) )| (typesNum (unaryMinus | unaryPlus))
+operation -> ((typesNum) mathOp (typesNum)) | (typesNum (unaryMinus | unaryPlus))
 extraOperation -> mathOp (typesNum)
 extraOperationV2 -> (typesNum) mathOp
+simpleMathOperation -> ((intNum) mathOp (intNum))
 
 boolOp -> (intNum|floatNum) boolsMathOp (intNum|floatNum) 
 extraBoolOp -> boolsMathOp (intNum|floatNum)
 extraBoolOpV2 -> (intNum|floatNum) boolsMathOp
 boolOpIds -> id extraBoolOp | extraBoolOpV2 id | id boolsMathOp id
 
-parameter -> typesLim id
-parameters -> parentS parameterList? parentE
-parameterList -> parameter (',' parameter)*
+parameters -> param sep typesNum sep id
 
 #Starting symbol
 si -> expression
@@ -107,18 +107,23 @@ si -> expression
 
 #All about vars
 assignation -> equal (boolNum|intNum|floatNum|stringC|operation|letter|arrayElement|boolOp) 
-varAssig -> scopeVar (varIns|varInsAssig) assignation 
-varInsAssig -> scopeVar sep types id assignation 
-varIns -> scopeVar sep types sep id  
-allTypesVars -> varIns | varInsAssig | varInsAssig | assignation
+varAssig -> (varIns|varInsAssig|varInsAssigGlob|varInsGlob) assignation 
+varInsAssig -> loc types id assignation 
+varIns -> loc types sep id  
+varInsAssigGlob -> global types id assignation 
+varInsGlob -> global types sep id  
+allTypesVars -> varIns | varInsAssig | varInsAssig | assignation | varInsGlob | varInsAssigGlob
 
 #All about arrays
 assignationArray -> equal squareParentS (intNum|letter (coma intNum|letter)*)? squareParentE 
-arrayIns -> scopeVar sep typesLim sep id sep squareParentS intNum squareParentE  
-arrayInsAssig -> scopeVar sep typesLim sep id sep squareParentS sep intNum sep squareParentE assignationArray  
-arrayAssig -> (arrayIns|arrayInsAssig) squareParentS intNum squareParentE equal (intNum|letter)  
-arrayElement -> (arrayIns|arrayInsAssig) squareParentS intNum squareParentE  
-allTypersArr -> arrayAssig | arrayIns | arrayInsAssig | assignationArray
+arrayIns -> loc typesLim sep id sep squareParentS intNum squareParentE  
+arrayInsAssig -> loc typesLim sep id sep squareParentS sep intNum sep squareParentE assignationArray  
+arrayAssig -> (arrayIns|arrayInsAssig|arrayInsGlob|arrayInsAssiGlob) squareParentS intNum squareParentE equal (intNum|letter)  
+arrayElement -> (arrayIns|arrayInsAssig|arrayInsGlob|arrayInsAssiGlob) squareParentS intNum squareParentE  
+allTypersArr -> arrayAssig | arrayIns | arrayInsAssig | assignationArray | arrayInsAssiGlob | arrayInsGlob
+arrayInsGlob -> global typesLim sep id sep squareParentS intNum squareParentE  
+arrayInsAssiGlob -> global typesLim sep id sep squareParentS sep intNum sep squareParentE assignationArray  
+
 
 #I think not necessary
 extraVarAssig -> (varAssig|varInsAssig) equal (varAssig|varInsAssig) sep (mathOp (varAssig|varInsAssig)|extraOperation) sep endExpr
@@ -126,31 +131,31 @@ boolExtraVarAssig -> (varAssig|varInsAssig) equal (varAssig|varInsAssig) sep (bo
 equalizingVars-> (varAssig|varInsAssig) equal (varAssig|varInsAssig|varIns) endExpr
 
 #All the posibilities that a code block can do
-allABlockCouldCon -> (varAssig|varIns|varInsAssig|arrayAssig|arrayInsAssig|arrayIns|ifStruc|ifElseStruc|switchStruc|whileLoop|forLopp) endExpr
+allABlockCouldCon -> (parameters|varAssig|varIns|varInsAssig|arrayAssig|arrayInsAssig|arrayIns|ifStruc|ifElseStruc|switchStruc|whileLoop|forLopp) endExpr
 
 #All about functions
 mainFun -> typesLimFunc sep main sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
-function -> typesLimFunc sep id sep parameters sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
+function -> typesLimFunc sep id sep delimeterFunc sep allABlockCouldCon* sep return sep (stringC|operation)? sep endExpr sep delimeterFunc
 
 #conditional structures
 ifStruc -> if sep parentS (boolOpIds | boolOp ((or | and) boolOp)*) parentE delimeterFunc allABlockCouldCon* (return (stringC|operation)?)? delimeterFunc
 ifElseStruc -> ifStruc else delimeterFunc allABlockCouldCon* (return (stringC|operation)?)? delimeterFunc
-switchStruc -> switch parentS (intNum|stringC) parentE delimeterFunc (case(intNum|letter) allABlockCouldCon* brake endExpr)+ sep default allABlockCouldCon* brake endExpr delimeterFunc
+switchStruc -> switch parentS (intNum|stringC) parentE delimeterFunc (case : (intNum|letter) allABlockCouldCon* brake endExpr)+ sep default : allABlockCouldCon* brake endExpr delimeterFunc
 
 #loops
 whileLoop -> while parentS (boolOpIds | boolOp ((or | and) boolOp)*) parentE delimeterFunc allABlockCouldCon* return? (stringC|operation)? delimeterFunc
-forLopp -> for id sep in sep range parentS (0|intNum) coma intNum (1|intNum) parentE delimeterFunc allABlockCouldCon* return? (stringC|operation)? delimeterFunc
+forLopp -> for id sep in sep range parentS (0|intNum|simpleMathOperation) coma intNum (1|intNum|simpleMathOperation) parentE delimeterFunc allABlockCouldCon* return? (stringC|operation)? delimeterFunc
 
 #StandardIO
 printLn -> print parentS (stringC | operation | boolNum | intNum | floatNum | id) parentE endExpr
-readInput -> read parentS (stringC | intNum | floatNum) parentE endExpr
-
+readInput -> read id
 #Experiment
 id -> allTypersArr | allTypesVars | function | main
 
 #All the connections
-expression -> main
+expression -> main  
 expression -> function
+expression -> parameters
 expression -> id 
 expression -> and
 expression -> or
